@@ -1,4 +1,4 @@
-from typing import List, Tuple, TYPE_CHECKING
+from typing import List, Tuple, TYPE_CHECKING, Optional
 from .util import get_message_mentions
 from twitchbot.channel import Channel, channels
 from .irc import Irc
@@ -14,15 +14,15 @@ if TYPE_CHECKING:
 
 class Message:
     def __init__(self, msg, irc=None, bot=None):
-        self.channel: Channel = None
-        self.author: str = None
-        self.content: str = None
+        self.channel: Optional[Channel] = None
+        self.author: Optional[str] = None
+        self.content: Optional[str] = None
         self.parts: List[str] = []
         self.type: MessageType = MessageType.NONE
         self.raw_msg: str = msg
-        self.receiver: str = None
+        self.receiver: Optional[str] = None
         self.irc: Irc = irc
-        self.tags: Tags = None
+        self.tags: Optional[Tags] = None
         self.emotes: List[Emote] = []
         self.mentions: Tuple[str] = ()
         self.bot: 'BaseBot' = bot
@@ -36,9 +36,8 @@ class Message:
             self.channel = channels[m['channel']]
             self.author = self.tags.all_tags.get('login')
             self.content = m['content']
-            if self.tags.msg_id in ['sub', 'resub', 'subgift', 'anonsubgift', 'submysterygift']:
+            if self.tags.msg_id in {'sub', 'resub', 'subgift', 'anonsubgift', 'submysterygift'}:
                 self.type = MessageType.SUBSCRIPTION
-
 
         m = RE_PRIVMSG.search(self.raw_msg)
         if m:
@@ -128,3 +127,9 @@ class Message:
             return 'PING'
 
         return self.raw_msg
+
+    def __len__(self):
+        """
+        :return: the len() of self.parts
+        """
+        return len(self.parts)
